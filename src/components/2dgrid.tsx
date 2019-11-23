@@ -1,20 +1,30 @@
-import React, { Component } from 'react';
-import { Grid, Row, Col } from 'react-flexbox-grid';
+import React, { Component } from 'react'
+import { Grid, Row, Col } from 'react-flexbox-grid'
 
-class Grid2D extends Component {
-    
-    render() {
-        return (
-            <Grid>
-                <Row>
-                    <Col>
-                        <p>
-                        Helloo
-                        </p>
-                    </Col>
-                </Row>
-            </Grid>
-        )
-    }
+interface IProps {
+  cells: React.ReactElement[][]
 }
-export default Grid2D;
+
+interface IState {}
+
+export default class Grid2D extends Component<IProps, IState> {
+  constructor(props: IProps) {
+    super(props)
+  }
+
+  render() {
+    return (
+      <Grid fluid>
+        {this.props.cells.map(arr => {
+          return (
+            <Row>
+              {arr.map(cell => {
+                return <Col>{cell}</Col>
+              })}
+            </Row>
+          )
+        })}
+      </Grid>
+    )
+  }
+}

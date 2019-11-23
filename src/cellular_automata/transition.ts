@@ -1,4 +1,4 @@
-import Environment from "./environment";
-import State from "./state";
+import Environment from './environment'
+import State from './state'
 
-export type transitionRule = (env: Environment) => State;
+export type transitionRule = (env: Environment) => State

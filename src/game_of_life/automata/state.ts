@@ -1,14 +1,14 @@
-import State from "../../cellular_automata/state";
+import State from '../../cellular_automata/state'
 
 export default class GOLState extends State {
-    public alive: boolean;
+  public alive: boolean
 
-    constructor(alive: boolean) {
-        super();
-        this.alive = alive;
-    }
+  constructor(alive: boolean = false) {
+    super()
+    this.alive = alive
+  }
 
-    clone(): GOLState {
-        return new GOLState(this.alive);
-    }
+  clone(): GOLState {
+    return new GOLState(this.alive)
+  }
 }

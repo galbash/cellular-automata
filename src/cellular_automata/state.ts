@@ -1,3 +1,3 @@
 export default abstract class State {
-    abstract clone() : State;
+  abstract clone(): State
 }
