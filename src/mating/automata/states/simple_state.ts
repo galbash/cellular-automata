@@ -1,54 +1,56 @@
 import State from '../../../cellular_automata/state'
 
 export const Direction = {
-    UP: {name: "UP", coordinates: [-1, 0]},
-    RIGHT: {name: "RIGHT", coordinates: [0, 1]},
-    DOWN: {name: "DOWN", coordinates: [1, 0]},
-    LEFT: {name: "LEFT", coordinates: [0, -1]},
+  UP: { name: 'UP', coordinates: [-1, 0] },
+  RIGHT: { name: 'RIGHT', coordinates: [0, 1] },
+  DOWN: { name: 'DOWN', coordinates: [1, 0] },
+  LEFT: { name: 'LEFT', coordinates: [0, -1] },
 }
 
 export type TDirection = keyof typeof Direction
 
 export interface Person {
-  character: number;
-  direction?: TDirection;
-  attemptingMove?: boolean;
+  character: number
+  direction?: TDirection
+    moveAttempts?: number
 }
 
 export function randomDirection(): TDirection {
-    let directions = Object.keys(Direction);
-    let directionsCount = directions.length;
-    let index = Math.floor(Math.random() * directionsCount) % directionsCount
-    return (directions[index] as TDirection)
+  let directions = Object.keys(Direction)
+  let directionsCount = directions.length
+  let index = Math.floor(Math.random() * directionsCount) % directionsCount
+  return directions[index] as TDirection
+}
 
+export function calcMatingScore(p1: Person, p2: Person) {
+  return Math.abs(p1.character - p2.character);
 }
 
 export default class SimpleMatingState extends State {
-  public male?: Person;
-  public nextMale?: [number, number];
+  public male?: Person
+  public nextMale?: [number, number]
 
-  public female?: Person;
+  public female?: Person
 
   constructor(male?: number, female?: number) {
     super()
-      if (male) {
-          this.male = { character: male }
-      }
+    if (male) {
+      this.male = { character: male }
+    }
 
-      if (female) {
-          this.female = { character: female }
-      }
+    if (female) {
+      this.female = { character: female }
+    }
   }
 
   clone(): SimpleMatingState {
     let x = new SimpleMatingState(this.male?.character, this.female?.character)
-      if (x.male) {
-          x.male.direction = this.male?.direction;
-          x.male.attemptingMove = this.male?.attemptingMove;
-      }
-      if (this.nextMale) {
-          x.nextMale = [...this.nextMale] as [number, number]
-      }
+    if (x.male) {
+      x.male.direction = this.male?.direction
+    }
+    if (this.nextMale) {
+      x.nextMale = [...this.nextMale] as [number, number]
+    }
     return x
   }
 
@@ -61,6 +63,6 @@ export default class SimpleMatingState extends State {
       return 100 // highest penalty
     }
 
-    return Math.abs(this.male.character - this.female.character)
+    return calcMatingScore(this.male, this.female)
   }
 }

@@ -9,16 +9,13 @@ interface MatingCellProps extends GridCellProps {
 
 const MatingCell: GridCell<MatingCellProps> = (props: MatingCellProps) => {
   const { state } = props
-    if (!state.male && !state.female) {
-        // no tooltips for better performance
-        return  (
-            <React.Fragment>
-            ⬜
-        </React.Fragment>
-        )
-    }
+  if (!state.male && !state.female) {
+    // no tooltips for better performance
+    return <React.Fragment>⬜</React.Fragment>
+  }
   return (
-    <Tooltip title={`male: ${state.male?.character || 'no'}, female: ${state.female?.character || 'no'}`}>
+    <Tooltip
+      title={`male: ${state.male?.character || 'no'}, female: ${state.female?.character || 'no'}`}>
       {state.male && !state.female && '👨'}
       {state.female && !state.male && '👩'}
       {state.female && state.male && '👫'}

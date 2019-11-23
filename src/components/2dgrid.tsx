@@ -8,23 +8,21 @@ interface IProps {
 interface IState {}
 
 export default class Grid2D extends Component<IProps, IState> {
-  constructor(props: IProps) {
-    super(props)
-  }
-
   render() {
     return (
-      <Grid fluid>
-        {this.props.cells.map(arr => {
-          return (
-            <Row>
-              {arr.map(cell => {
-                return <Col>{cell}</Col>
-              })}
-            </Row>
-          )
-        })}
-      </Grid>
+      <div>
+        <Grid fluid>
+          {this.props.cells.map(arr => {
+            return (
+              <Row>
+                {arr.map(cell => {
+                  return <Col>{cell}</Col>
+                })}
+              </Row>
+            )
+          })}
+        </Grid>
+      </div>
     )
   }
 }

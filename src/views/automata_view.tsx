@@ -3,15 +3,10 @@ import { Slider, Layout } from 'antd'
 
 import Grid2D from '../components/2dgrid'
 import Automata from '../cellular_automata/automata'
-import GridCell, { GridCellProps } from '../components/state_cell'
 import { SliderValue } from 'antd/es/slider'
 import Button from 'antd/es/button/button'
-import { GridEntry } from '../cellular_automata/grid'
-import GOLState from '../game_of_life/automata/state'
-import GOLAutomata from '../game_of_life/automata/automata'
 import State from '../cellular_automata/state'
 
-const { Header, Content } = Layout
 const MAX_SLIDER_VALUE = 5
 const MIN_INTERVAL_MS = 1000
 const SPEED_INTERVALS = MIN_INTERVAL_MS / MAX_SLIDER_VALUE
@@ -110,6 +105,9 @@ export default class AutomataView extends Component<IProps, IState> {
           Generate
         </Button>
         <Button onClick={this.onStartClick}>{running ? 'Stop' : 'Start'}</Button>
+        <Button disabled={running} onClick={this.intervalHandler}>
+          Single Step
+        </Button>
         <Slider
           tipFormatter={null}
           max={MAX_SLIDER_VALUE}

@@ -52,5 +52,4 @@ export default class MooreEnv extends Environment {
 
     throw new Error('need more coordinates')
   }
-
 }

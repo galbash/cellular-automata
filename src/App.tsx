@@ -8,12 +8,13 @@ import MatingCell from './mating/components/cell'
 import MatingAutomata, { matingFillRandom } from './mating/automata/automata'
 import GOLState from './game_of_life/automata/state'
 import State from './cellular_automata/state'
-import MatingState, {default as SimpleMatingState} from './mating/automata/states/simple_state'
+import MatingState, { default as SimpleMatingState } from './mating/automata/states/simple_state'
 import Automata from './cellular_automata/automata'
 import MatingAutomataDetails from './mating/components/automata_details'
 import { Menu, Layout, Dropdown } from 'antd'
 import { ClickParam } from 'antd/es/menu'
-import FirstSightTransition from "./mating/automata/transitions/first_sight";
+import FirstSightTransition from './mating/automata/transitions/first_sight'
+import ReplaceableCouplesTransition from './mating/automata/transitions/replaceable_couples_2'
 const { Header, Content } = Layout
 
 @hot
@@ -42,6 +43,19 @@ class App extends Component {
         )}
       />,
     ],
+    [
+      'Mating Option 2',
+      <AutomataView
+        cellDisplay={(state: State) => <MatingCell state={state as MatingState} />}
+        automataCreator={() =>
+          new MatingAutomata(10, SimpleMatingState, ReplaceableCouplesTransition)
+        }
+        onGenerate={(automata: Automata) => matingFillRandom(automata as MatingAutomata)}
+        automataDetailsDisplay={(automata: Automata) => (
+          <MatingAutomataDetails automata={automata as MatingAutomata} />
+        )}
+      />,
+    ],
   ])
   handleMenuClick = (event: ClickParam) => {
     this.setState({
@@ -50,23 +64,26 @@ class App extends Component {
   }
 
   render() {
-      const menu = (<Menu onClick={this.handleMenuClick}>
-          {[...this.AUTOMATAS.keys()].map((name: String) => (
-              <Menu.Item key={name as string}>{name}</Menu.Item>
-          ))}
-      </Menu>)
+    const menu = (
+      <Menu onClick={this.handleMenuClick}>
+        {[...this.AUTOMATAS.keys()].map((name: String) => (
+          <Menu.Item key={name as string}>{name}</Menu.Item>
+        ))}
+      </Menu>
+    )
 
-      return <Layout>
-          <Header><h1 style={{color: 'white'}}>Cellular Automata</h1></Header>
-          <Content>
-              Game:{' '}
-              <Dropdown.Button overlay={menu}>
-                  {this.state.game}
-              </Dropdown.Button>
-              <br/>
-              {this.AUTOMATAS.get(this.state.game)}
-          </Content>
+    return (
+      <Layout>
+        <Header>
+          <h1 style={{ color: 'white' }}>Cellular Automata</h1>
+        </Header>
+        <Content>
+          Game: <Dropdown.Button overlay={menu}>{this.state.game}</Dropdown.Button>
+          <br />
+          {this.AUTOMATAS.get(this.state.game)}
+        </Content>
       </Layout>
+    )
   }
 }
 

@@ -10,16 +10,17 @@ function checkCoordinatesZero(c1: [number, number], c2?: [number, number]) {
 
 // couples are static
 // females are static
-export default function FirstSightTransition(env: Environment): State {
+// male meeting a couple might replace existing male
+export default function ReplaceableCouplesTransition(env: Environment): State {
   const currentState: SimpleMatingState = env.get(0, 0) as SimpleMatingState
   const nextState = currentState.clone()
 
-  if (currentState.male && currentState.female) {
-    // a couple doesn't move
-    return currentState
-  }
+  // if (currentState.male && currentState.female) {
+  //   // a couple doesn't move
+  //   return currentState
+  // }
 
-  if (currentState.male && nextState.male) {
+  if (currentState.male && nextState.male && !currentState.female) {
     // next for type checking
     // move - man without woman always has direction.
     const currentMaleDirection = Direction[currentState.male.direction as TDirection]
@@ -33,7 +34,12 @@ export default function FirstSightTransition(env: Environment): State {
           nextLocation.nextMale,
         )
       ) {
-        nextState.male = undefined
+        if (nextLocation.male) {
+          nextState.male = nextLocation.male
+          nextState.male.direction = randomDirection()
+        } else {
+          nextLocation.male = undefined
+        }
       } else {
         // move failed
         if (Math.random() > 0.8) {
@@ -67,7 +73,7 @@ export default function FirstSightTransition(env: Environment): State {
       nextState.nextMale = undefined
     }
 
-    if (!nextState.nextMale && !nextState.male) {
+    if (!nextState.nextMale) {
       // no move attempt was made or if failed
       for (let cor of Object.values(Direction).map(d => d.coordinates)) {
         if (!env.isAccessible(...cor)) {
@@ -85,8 +91,14 @@ export default function FirstSightTransition(env: Environment): State {
             maleDirection.coordinates as [number, number],
           )
         ) {
-          nextState.nextMale = cor as [number, number]
-          break
+          if (
+            !currentState.female ||
+            currentState.matingScore >
+              Math.abs(state.male.character - currentState.female.character)
+          ) {
+            nextState.nextMale = cor as [number, number]
+            break
+          }
         }
       }
     }
