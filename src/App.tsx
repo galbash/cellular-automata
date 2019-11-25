@@ -11,28 +11,22 @@ import Automata from './cellular_automata/automata'
 import MatingAutomataDetails from './mating/components/automata_details'
 import { Menu, Layout, Dropdown } from 'antd'
 import { ClickParam } from 'antd/es/menu'
-import FirstSightCell from './mating/components/first_sight_cell'
+import MatingCell from './mating/components/cell'
 import {
-  FirstSightState,
   NoCoupleState as FirstSightNoCoupleState,
-  transition as firstSightTransition,
   fillBoard as firstSightFillBoard,
 } from './mating/automata/first_sight'
-import SwitchPartnersCell from './mating/components/switch_partners_cell'
 import {
-  SwitchPartnersState,
   NoCoupleState as SwitchPartnersNoCoupleState,
-  transition as switchPartnersTransition,
   fillBoard as switchPartnersFillBoard,
 } from './mating/automata/switch_partners'
 
-import MovingCouplesCell from './mating/components/moving_couples_cell'
 import {
-  MovingCouplesState,
   NoCoupleFirstState as MovingCouplesNoCoupleState,
-  transition as movingCouplesTransition,
   fillBoard as movingCouplesFillBoard,
 } from './mating/automata/moving_couples'
+import { transition as matingTransition } from './mating/automata/transition'
+import BaseMatingState from './mating/automata/mating_states'
 const { Header, Content } = Layout
 
 @hot
@@ -56,9 +50,9 @@ class App extends Component {
       'Mating First Sight',
       () => (
         <AutomataView
-          cellDisplay={(state: State) => <FirstSightCell state={state as FirstSightState} />}
+          cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
           automataCreator={(size: number) =>
-            new MatingAutomata(size, FirstSightNoCoupleState, firstSightTransition)
+            new MatingAutomata(size, FirstSightNoCoupleState, matingTransition)
           }
           onGenerate={(automata: Automata) => firstSightFillBoard(automata as MatingAutomata)}
           automataDetailsDisplay={(automata: Automata) => (
@@ -71,11 +65,9 @@ class App extends Component {
       'Mating Switch Partners',
       () => (
         <AutomataView
-          cellDisplay={(state: State) => (
-            <SwitchPartnersCell state={state as SwitchPartnersState} />
-          )}
+          cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
           automataCreator={(size: number) =>
-            new MatingAutomata(size, SwitchPartnersNoCoupleState, switchPartnersTransition)
+            new MatingAutomata(size, SwitchPartnersNoCoupleState, matingTransition)
           }
           onGenerate={(automata: Automata) => switchPartnersFillBoard(automata as MatingAutomata)}
           automataDetailsDisplay={(automata: Automata) => (
@@ -88,9 +80,9 @@ class App extends Component {
       'Mating Moving Couples',
       () => (
         <AutomataView
-          cellDisplay={(state: State) => <MovingCouplesCell state={state as MovingCouplesState} />}
+          cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
           automataCreator={(size: number) =>
-            new MatingAutomata(size, MovingCouplesNoCoupleState, movingCouplesTransition)
+            new MatingAutomata(size, MovingCouplesNoCoupleState, matingTransition)
           }
           onGenerate={(automata: Automata) => movingCouplesFillBoard(automata as MatingAutomata)}
           automataDetailsDisplay={(automata: Automata) => (

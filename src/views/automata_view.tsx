@@ -6,8 +6,8 @@ import Automata from '../cellular_automata/automata'
 import { SliderValue } from 'antd/es/slider'
 import Button from 'antd/es/button/button'
 import State from '../cellular_automata/state'
-import { HasItemState, SwitchPartnersState } from '../mating/automata/switch_partners'
-import { Gender } from '../mating/automata/first_sight'
+import BaseMatingState, { HasItemState } from '../mating/automata/mating_states'
+import { Gender } from '../mating/automata/mating_states'
 
 const MAX_SLIDER_VALUE = 5
 const MIN_INTERVAL_MS = 1000
@@ -91,46 +91,46 @@ export default class AutomataView extends Component<IProps, IState> {
 
   intervalHandler = () => {
     let { automata } = this.state
-    let men = (automata.grid as SwitchPartnersState[][])
+    let men = (automata.grid as BaseMatingState[][])
       .reduce(
         (res: number[], arr) =>
           res.concat(
             arr
-              .filter(state => (state as SwitchPartnersState).getItemState(Gender.MALE).occupied)
+              .filter(state => (state as BaseMatingState).getItemState(Gender.MALE).occupied)
               .map(state => (state.getItemState(Gender.MALE) as HasItemState).character),
           ),
         [],
       )
       .sort()
-    let woman = (automata.grid as SwitchPartnersState[][])
+    let woman = (automata.grid as BaseMatingState[][])
       .reduce(
         (res: number[], arr) =>
           res.concat(
             arr
-              .filter(state => (state as SwitchPartnersState).getItemState(Gender.FEMALE).occupied)
+              .filter(state => (state as BaseMatingState).getItemState(Gender.FEMALE).occupied)
               .map(state => (state.getItemState(Gender.FEMALE) as HasItemState).character),
           ),
         [],
       )
       .sort()
     automata.step()
-    let newmen = (automata.grid as SwitchPartnersState[][])
+    let newmen = (automata.grid as BaseMatingState[][])
       .reduce(
         (res: number[], arr) =>
           res.concat(
             arr
-              .filter(state => (state as SwitchPartnersState).getItemState(Gender.MALE).occupied)
+              .filter(state => (state as BaseMatingState).getItemState(Gender.MALE).occupied)
               .map(state => (state.getItemState(Gender.MALE) as HasItemState).character),
           ),
         [],
       )
       .sort()
-    let newwoman = (automata.grid as SwitchPartnersState[][])
+    let newwoman = (automata.grid as BaseMatingState[][])
       .reduce(
         (res: number[], arr) =>
           res.concat(
             arr
-              .filter(state => (state as SwitchPartnersState).getItemState(Gender.FEMALE).occupied)
+              .filter(state => (state as BaseMatingState).getItemState(Gender.FEMALE).occupied)
               .map(state => (state.getItemState(Gender.FEMALE) as HasItemState).character),
           ),
         [],
