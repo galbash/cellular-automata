@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, ReactElement } from 'react'
 import { hot } from 'react-hot-loader/root'
 import AutomataView from './views/automata_view'
 import GOLCell from './game_of_life/components/cell'
@@ -15,6 +15,13 @@ import { Menu, Layout, Dropdown } from 'antd'
 import { ClickParam } from 'antd/es/menu'
 import FirstSightTransition from './mating/automata/transitions/first_sight'
 import ReplaceableCouplesTransition from './mating/automata/transitions/replaceable_couples_2'
+import FirstSightCell from './mating/components/first_sight_cell'
+import {
+  FirstSightState,
+  NoCoupleState,
+  transition as firstSightTransition,
+  fillBoard as firstSightFillBoard,
+} from './mating/automata/first_sight'
 const { Header, Content } = Layout
 
 @hot
@@ -23,38 +30,61 @@ class App extends Component {
     game: 'Mating Option 1',
   }
 
-  AUTOMATAS: Map<String, React.ReactElement> = new Map([
+  AUTOMATAS: Map<String, () => ReactElement> = new Map([
     [
       'Game Of Life',
-      <AutomataView
-        cellDisplay={(state: State) => <GOLCell state={state as GOLState} />}
-        automataCreator={() => new GOLAutomata(50)}
-        onGenerate={fillRandom}
-      />,
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => <GOLCell state={state as GOLState} />}
+          automataCreator={(size: number) => new GOLAutomata(size)}
+          onGenerate={fillRandom}
+        />
+      ),
     ],
     [
       'Mating Option 1',
-      <AutomataView
-        cellDisplay={(state: State) => <MatingCell state={state as MatingState} />}
-        automataCreator={() => new MatingAutomata(50, SimpleMatingState, FirstSightTransition)}
-        onGenerate={(automata: Automata) => matingFillRandom(automata as MatingAutomata)}
-        automataDetailsDisplay={(automata: Automata) => (
-          <MatingAutomataDetails automata={automata as MatingAutomata} />
-        )}
-      />,
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => <MatingCell state={state as MatingState} />}
+          automataCreator={(size: number) =>
+            new MatingAutomata(size, SimpleMatingState, FirstSightTransition)
+          }
+          onGenerate={(automata: Automata) => matingFillRandom(automata as MatingAutomata)}
+          automataDetailsDisplay={(automata: Automata) => (
+            <MatingAutomataDetails automata={automata as MatingAutomata} />
+          )}
+        />
+      ),
     ],
     [
       'Mating Option 2',
-      <AutomataView
-        cellDisplay={(state: State) => <MatingCell state={state as MatingState} />}
-        automataCreator={() =>
-          new MatingAutomata(10, SimpleMatingState, ReplaceableCouplesTransition)
-        }
-        onGenerate={(automata: Automata) => matingFillRandom(automata as MatingAutomata)}
-        automataDetailsDisplay={(automata: Automata) => (
-          <MatingAutomataDetails automata={automata as MatingAutomata} />
-        )}
-      />,
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => <MatingCell state={state as MatingState} />}
+          automataCreator={(size: number) =>
+            new MatingAutomata(size, SimpleMatingState, ReplaceableCouplesTransition)
+          }
+          onGenerate={(automata: Automata) => matingFillRandom(automata as MatingAutomata)}
+          automataDetailsDisplay={(automata: Automata) => (
+            <MatingAutomataDetails automata={automata as MatingAutomata} />
+          )}
+        />
+      ),
+    ],
+    [
+      'Mating First Sight',
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => <FirstSightCell state={state as FirstSightState} />}
+          automataCreator={(size: number) =>
+            new MatingAutomata(size, NoCoupleState, firstSightTransition)
+          }
+          onGenerate={(automata: Automata) => firstSightFillBoard(automata as MatingAutomata)}
+          automataDetailsDisplay={(automata: Automata) => (
+            <MatingAutomataDetails automata={automata as MatingAutomata} />
+          )}
+        />
+      ),
     ],
   ])
   handleMenuClick = (event: ClickParam) => {
@@ -71,6 +101,7 @@ class App extends Component {
         ))}
       </Menu>
     )
+    const automataViewGenerator = this.AUTOMATAS.get(this.state.game)
 
     return (
       <Layout>
@@ -80,7 +111,7 @@ class App extends Component {
         <Content>
           Game: <Dropdown.Button overlay={menu}>{this.state.game}</Dropdown.Button>
           <br />
-          {this.AUTOMATAS.get(this.state.game)}
+          {automataViewGenerator && automataViewGenerator()}
         </Content>
       </Layout>
     )

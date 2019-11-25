@@ -12,7 +12,7 @@ export type TDirection = keyof typeof Direction
 export interface Person {
   character: number
   direction?: TDirection
-    moveAttempts?: number
+  moveAttempts?: number
 }
 
 export function randomDirection(): TDirection {
@@ -23,7 +23,7 @@ export function randomDirection(): TDirection {
 }
 
 export function calcMatingScore(p1: Person, p2: Person) {
-  return Math.abs(p1.character - p2.character);
+  return Math.abs(p1.character - p2.character)
 }
 
 export default class SimpleMatingState extends State {
@@ -60,7 +60,7 @@ export default class SimpleMatingState extends State {
     }
 
     if (!this.male || !this.female) {
-      return 100 // highest penalty
+      return 101 // highest penalty
     }
 
     return calcMatingScore(this.male, this.female)
