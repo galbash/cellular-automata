@@ -18,10 +18,17 @@ import ReplaceableCouplesTransition from './mating/automata/transitions/replacea
 import FirstSightCell from './mating/components/first_sight_cell'
 import {
   FirstSightState,
-  NoCoupleState,
+  NoCoupleState as FirstSightNoCoupleState,
   transition as firstSightTransition,
   fillBoard as firstSightFillBoard,
 } from './mating/automata/first_sight'
+import SwitchPartnersCell from './mating/components/switch_partners_cell'
+import {
+  SwitchPartnersState,
+  NoCoupleState as SwitchPartnersNoCoupleState,
+  transition as switchPartnersTransition,
+  fillBoard as switchPartnersFillBoard,
+} from './mating/automata/switch_partners'
 const { Header, Content } = Layout
 
 @hot
@@ -77,9 +84,26 @@ class App extends Component {
         <AutomataView
           cellDisplay={(state: State) => <FirstSightCell state={state as FirstSightState} />}
           automataCreator={(size: number) =>
-            new MatingAutomata(size, NoCoupleState, firstSightTransition)
+            new MatingAutomata(size, FirstSightNoCoupleState, firstSightTransition)
           }
           onGenerate={(automata: Automata) => firstSightFillBoard(automata as MatingAutomata)}
+          automataDetailsDisplay={(automata: Automata) => (
+            <MatingAutomataDetails automata={automata as MatingAutomata} />
+          )}
+        />
+      ),
+    ],
+    [
+      'Mating Switch Partners',
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => (
+            <SwitchPartnersCell state={state as SwitchPartnersState} />
+          )}
+          automataCreator={(size: number) =>
+            new MatingAutomata(size, SwitchPartnersNoCoupleState, switchPartnersTransition)
+          }
+          onGenerate={(automata: Automata) => switchPartnersFillBoard(automata as MatingAutomata)}
           automataDetailsDisplay={(automata: Automata) => (
             <MatingAutomataDetails automata={automata as MatingAutomata} />
           )}

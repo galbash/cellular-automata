@@ -6,11 +6,13 @@ import Automata from '../cellular_automata/automata'
 import { SliderValue } from 'antd/es/slider'
 import Button from 'antd/es/button/button'
 import State from '../cellular_automata/state'
+import {HasItemState, SwitchPartnersState} from "../mating/automata/switch_partners";
+import {Gender} from "../mating/automata/first_sight";
 
 const MAX_SLIDER_VALUE = 5
 const MIN_INTERVAL_MS = 1000
 const SPEED_INTERVALS = MIN_INTERVAL_MS / MAX_SLIDER_VALUE
-const DEFAULT_AUTOMATA_SIZE = 50
+const DEFAULT_AUTOMATA_SIZE = 20
 const DEFAULT_FAST_FORWARD_STEPS = 100
 
 interface IProps {
@@ -89,7 +91,31 @@ export default class AutomataView extends Component<IProps, IState> {
 
   intervalHandler = () => {
     let { automata } = this.state
+      let men = (automata.grid as SwitchPartnersState[][]).reduce(
+          (res: number[], arr) => res.concat(arr.filter(state => (state as SwitchPartnersState).getItemState(Gender.MALE).occupied).map(state => (state.getItemState(Gender.MALE) as HasItemState).character)),
+          []
+      ).sort()
+      let woman = (automata.grid as SwitchPartnersState[][]).reduce(
+          (res: number[], arr) => res.concat(arr.filter(state => (state as SwitchPartnersState).getItemState(Gender.FEMALE).occupied).map(state => (state.getItemState(Gender.FEMALE) as HasItemState).character)),
+          []
+      ).sort()
     automata.step()
+      let newmen = (automata.grid as SwitchPartnersState[][]).reduce(
+          (res: number[], arr) => res.concat(arr.filter(state => (state as SwitchPartnersState).getItemState(Gender.MALE).occupied).map(state => (state.getItemState(Gender.MALE) as HasItemState).character)),
+          []
+      ).sort()
+      let newwoman = (automata.grid as SwitchPartnersState[][]).reduce(
+          (res: number[], arr) => res.concat(arr.filter(state => (state as SwitchPartnersState).getItemState(Gender.FEMALE).occupied).map(state => (state.getItemState(Gender.FEMALE) as HasItemState).character)),
+          []
+      ).sort()
+      const areEqual = (array1: number[], array2: number[]) => array1.length === array2.length && array1.every((value, index) => value === array2[index])
+
+      if (!areEqual(men, newmen)) {
+      debugger;
+      }
+      if (!areEqual(woman, newwoman)) {
+          debugger;
+      }
     this.setState({
       automata,
     })
