@@ -138,13 +138,10 @@ export abstract class HasItemState extends ItemState {
   static CHANGE_DIRACTION_CHANCE: number = 0.1
   public character: number
   public direction: TDirection
-  constructor(gender: Gender, character: number, direction?: TDirection) {
+  constructor(gender: Gender, character: number, direction: TDirection) {
     super(gender)
     this.character = character
-    this.direction =
-      Math.random() < HasItemState.CHANGE_DIRACTION_CHANCE
-        ? randomDirection(direction)
-        : direction || randomDirection()
+    this.direction = direction
   }
 
   get occupied(): boolean {
@@ -153,6 +150,14 @@ export abstract class HasItemState extends ItemState {
 }
 
 export class HasItemFirstState extends HasItemState {
+  constructor(gender: Gender, character: number, direction?: TDirection) {
+    let realDirection =
+      Math.random() < HasItemState.CHANGE_DIRACTION_CHANCE
+        ? randomDirection(direction)
+        : direction || randomDirection()
+    super(gender, character, realDirection)
+  }
+
   transitionSingle(env: Environment): ItemState {
     return new HasItemSecondState(this.gender, this.character, this.direction)
   }
@@ -233,7 +238,7 @@ export abstract class FirstSightState extends BaseMatingState {
       this.maleState = item
     }
 
-    if (item.gender == Gender.FEMALE) {
+    if (item.gender === Gender.FEMALE) {
       this.femaleState = item
     }
 
@@ -277,7 +282,7 @@ export function transition(env: Environment): FirstSightState {
 
 export function fillBoard(automata: MatingAutomata) {
   const rand = () => Math.floor(Math.random() * 101)
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 50; i++) {
     let maleState: FirstSightState
     let maleItemState: ItemState
     let x
@@ -292,7 +297,7 @@ export function fillBoard(automata: MatingAutomata) {
       new HasItemFirstState(Gender.MALE, rand()),
     )
   }
-  for (let i = 0; i < 2; i++) {
+  for (let i = 0; i < 50; i++) {
     let femaleState: FirstSightState
     let femaleItemState: ItemState
     let x

@@ -1,18 +1,18 @@
 import React from 'react'
 import GridCell, { GridCellProps } from '../../components/state_cell'
 import { Tooltip } from 'antd'
-import { FirstSightState, Gender, HasItemState, ItemState } from '../automata/first_sight'
+import { MovingCouplesState, Gender, HasItemState, ItemState } from '../automata/moving_couples'
 
-interface FirstSightCellProps extends GridCellProps {
-  state: FirstSightState
+interface MovingCouplesCellProps extends GridCellProps {
+  state: MovingCouplesState
 }
 
 const tooltipText = (item: ItemState): String =>
   item.occupied ? (item as HasItemState).character.toString() : 'no'
 
-const FirstSightCell: GridCell<FirstSightCellProps> = (props: FirstSightCellProps) => {
+const MovingCouplesCell: GridCell<MovingCouplesCellProps> = (props: MovingCouplesCellProps) => {
   const { state } = props
-  if (!(state instanceof FirstSightState)) {
+  if (!(state instanceof MovingCouplesState)) {
     return <React.Fragment>⬜</React.Fragment>
   }
 
@@ -32,4 +32,4 @@ const FirstSightCell: GridCell<FirstSightCellProps> = (props: FirstSightCellProp
   )
 }
 
-export default FirstSightCell
+export default MovingCouplesCell

@@ -19,38 +19,6 @@ export default class MatingAutomata extends Automata {
   }
 }
 
-const shuffleArray = (arr: number[]) =>
-  arr
-    .map(a => [Math.random(), a])
-    .sort((a, b) => a[0] - b[0])
-    .map(a => a[1])
-
-// export function matingFillRandom(automata: MatingAutomata) {
-//   let numbers: number[] = shuffleArray([...Array(100).keys()].map(key => key + 1))
-//   console.log(numbers)
-//   while (numbers.length) {
-//     let maleState: SimpleMatingState | null = null
-//     let femaleState: SimpleMatingState | null = null
-//     do {
-//       let x = Math.floor(Math.random() * automata.size)
-//       let y = Math.floor(Math.random() * automata.size)
-//       if (!(automata.grid as SimpleMatingState[][])[x][y].male) {
-//         maleState = (automata.grid as SimpleMatingState[][])[x][y]
-//       }
-//     } while (!maleState)
-//
-//     do {
-//       let x = Math.floor(Math.random() * automata.size)
-//       let y = Math.floor(Math.random() * automata.size)
-//       if (!(automata.grid as SimpleMatingState[][])[x][y].female) {
-//         femaleState = (automata.grid as SimpleMatingState[][])[x][y]
-//       }
-//     } while (!femaleState)
-//     femaleState.female = { character: numbers.pop() as number }
-//     maleState.male = { character: numbers.pop() as number }
-//     maleState.male.direction = randomDirection()
-//   }
-// }
 export function matingFillRandom(automata: MatingAutomata) {
   const rand = () => Math.floor(Math.random() * 101)
   for (let i = 0; i < 50; i++) {

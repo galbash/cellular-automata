@@ -68,7 +68,7 @@ export class NoItemFirstState extends NoItemState {
       if (!env.isAccessible(...cor)) {
         continue
       }
-      const state: SwitchPartnersState = env.get(...cor) as SwitchPartnersState
+      const state: MovingCouplesState = env.get(...cor) as MovingCouplesState
       if (!(state instanceof NoCoupleState)) {
         continue
       }
@@ -114,7 +114,7 @@ export class NoItemSecondState extends NoItemState {
     if (!env.isAccessible(...this.nextItemCor)) {
       return fallbackState
     }
-    let state: SwitchPartnersState = env.get(...this.nextItemCor) as SwitchPartnersState
+    let state: MovingCouplesState = env.get(...this.nextItemCor) as MovingCouplesState
     if (!(state instanceof NoCoupleState)) {
       return fallbackState
     }
@@ -169,9 +169,9 @@ export class HasItemSecondState extends HasItemState {
     if (!env.isAccessible(...currentDirection.coordinates)) {
       return new HasItemFirstState(this.gender, this.character, randomDirection(this.direction))
     }
-    let state: SwitchPartnersState = env.get(...currentDirection.coordinates) as SwitchPartnersState
+    let state: MovingCouplesState = env.get(...currentDirection.coordinates) as MovingCouplesState
     let itemState = state.getItemState(this.gender)
-    if (state instanceof CoupleSecondState) {
+    if (state instanceof CoupleSecondStateSwitch) {
       if (
         state.nextGender === this.gender &&
         checkCoordinatesZero(currentDirection.coordinates as [number, number], state.nextCor)
@@ -211,7 +211,7 @@ export class HasItemCoupleState extends HasItemState {
   }
 }
 
-export abstract class SwitchPartnersState extends BaseMatingState {
+export abstract class MovingCouplesState extends BaseMatingState {
   public maleState: ItemState
   public femaleState: ItemState
 
@@ -251,9 +251,9 @@ export abstract class SwitchPartnersState extends BaseMatingState {
   get matingScore(): number {
     return calcMatingScore(this.maleState, this.femaleState)
   }
-  abstract transition(env: Environment): SwitchPartnersState
+  abstract transition(env: Environment): MovingCouplesState
 
-  addItem(item: HasItemState): SwitchPartnersState {
+  addItem(item: HasItemState): MovingCouplesState {
     if (item.gender === Gender.MALE) {
       this.maleState = item
     }
@@ -266,19 +266,61 @@ export abstract class SwitchPartnersState extends BaseMatingState {
       return new CoupleFirstState(this.maleState, this.femaleState)
     }
 
-    return new NoCoupleState(this.maleState, this.femaleState)
+    return new NoCoupleFirstState(this.maleState, this.femaleState)
   }
 }
 
-export class NoCoupleState extends SwitchPartnersState {
+export abstract class NoCoupleState extends MovingCouplesState {
   constructor(maleState?: ItemState, femaleState?: ItemState) {
     super(
       maleState || new NoItemFirstState(Gender.MALE),
       femaleState || new NoItemFirstState(Gender.FEMALE),
     )
   }
+}
 
-  transition(env: Environment): SwitchPartnersState {
+export class NoCoupleFirstState extends NoCoupleState {
+  private isItemBusy(item: ItemState): boolean {
+    return item.occupied || (item as NoItemSecondState).nextItemCor !== undefined
+  }
+
+  transition(env: Environment): MovingCouplesState {
+    const nextMale: ItemState = this.maleState.transitionSingle(env)
+    const nextFemale: ItemState = this.femaleState.transitionSingle(env)
+
+    if (this.isItemBusy(nextMale) || this.isItemBusy(nextFemale)) {
+      return new NoCoupleMoveSingleSecondState(nextMale, nextFemale)
+    }
+
+    // if no single found, attempt to move couple
+    let backupItem: [number, number] | undefined = undefined
+    for (let cor of Object.values(Direction).map(d => d.coordinates as [number, number])) {
+      if (!env.isAccessible(...cor)) {
+        continue
+      }
+      const state: MovingCouplesState = env.get(...cor) as MovingCouplesState
+      if (!(state instanceof CoupleState)) {
+        continue
+      }
+
+      // we are looking for item that was heading our way, will probably
+      // continue heading this way.
+      const coupleDirection = Direction[state.direction]
+      if (checkCoordinatesZero(cor, coupleDirection.coordinates as [number, number])) {
+        return new NoCoupleMoveCoupleSecondState(this.maleState, this.femaleState, cor)
+      } else if (!backupItem) {
+        // if we don't find anything better
+        backupItem = cor
+      }
+    }
+
+    // if we have a backup item let's use it, otherwise nothing was found.
+    return new NoCoupleMoveCoupleSecondState(this.maleState, this.femaleState, backupItem)
+  }
+}
+
+export class NoCoupleMoveSingleSecondState extends NoCoupleState {
+  transition(env: Environment): MovingCouplesState {
     const nextMale: ItemState = this.maleState.transitionSingle(env)
     const nextFemale: ItemState = this.femaleState.transitionSingle(env)
 
@@ -289,28 +331,67 @@ export class NoCoupleState extends SwitchPartnersState {
       )
     }
 
-    return new NoCoupleState(nextMale, nextFemale)
+    return new NoCoupleFirstState(nextMale, nextFemale)
   }
 }
 
-export abstract class CoupleState extends SwitchPartnersState {
+export class NoCoupleMoveCoupleSecondState extends NoCoupleState {
+  public nextCoupleCor?: [number, number]
+  constructor(maleState: ItemState, femaleState: ItemState, cor?: [number, number]) {
+    super(maleState, femaleState)
+    this.nextCoupleCor = cor
+  }
+
+  transition(env: Environment): MovingCouplesState {
+    const fallbackState = new NoCoupleFirstState(this.maleState, this.femaleState)
+    if (!this.nextCoupleCor) {
+      return fallbackState
+    }
+    if (!env.isAccessible(...this.nextCoupleCor)) {
+      return fallbackState
+    }
+    let state: MovingCouplesState = env.get(...this.nextCoupleCor) as MovingCouplesState
+    if (!(state instanceof CoupleSecondStateMove)) {
+      return fallbackState
+    }
+
+    const itemDirection = Direction[state.direction as TDirection]
+    if (checkCoordinatesZero(this.nextCoupleCor, itemDirection.coordinates as [number, number])) {
+      return new CoupleFirstState(state.maleState, state.femaleState, state.direction)
+    }
+
+    return fallbackState
+  }
+}
+
+export abstract class CoupleState extends MovingCouplesState {
   public maleState: HasItemCoupleState
   public femaleState: HasItemCoupleState
-  constructor(maleState: HasItemCoupleState, femaleState: HasItemCoupleState) {
+  public direction: TDirection
+  constructor(
+    maleState: HasItemCoupleState,
+    femaleState: HasItemCoupleState,
+    direction: TDirection,
+  ) {
     super(maleState, femaleState)
     this.maleState = maleState
     this.femaleState = femaleState
+    this.direction = direction
   }
 }
 
 export class CoupleFirstState extends CoupleState {
-  constructor(maleState: HasItemCoupleState, femaleState: HasItemCoupleState) {
+  constructor(
+    maleState: HasItemCoupleState,
+    femaleState: HasItemCoupleState,
+    direction?: TDirection,
+  ) {
     // randomize direction for better switching each two-cycles
-    let newMaleState = new HasItemCoupleState(maleState)
-    newMaleState.direction = randomDirection(maleState.direction)
-    let newFemaleState = new HasItemCoupleState(femaleState)
-    newFemaleState.direction = randomDirection(newFemaleState.direction)
-    super(newMaleState, newFemaleState)
+    let realDirection =
+      Math.random() < HasItemState.CHANGE_DIRACTION_CHANCE
+        ? randomDirection(direction)
+        : direction || randomDirection()
+    super(maleState, femaleState, realDirection)
   }
 
   private isBetterMatch(
@@ -337,6 +418,51 @@ export class CoupleFirstState extends CoupleState {
     )
   }
 
+  private findBetterMatch(
+    other: MovingCouplesState,
+    cor: [number, number],
+    checkDirection: boolean = true,
+  ): Gender | undefined {
+    let isBetter: boolean =
+      this.matingScore + other.matingScore >
+      calcMatingScore(this.maleState, other.femaleState) +
+        calcMatingScore(other.maleState, this.femaleState)
+    if (!isBetter) {
+      return undefined // if the mating is not better, don't switch
+    }
+
+    let gender: Gender | undefined = undefined
+    let otherDirection
+    if (other instanceof CoupleState) {
+      otherDirection = Direction[other.direction]
+      gender = Gender.FEMALE // switch females for couple switches
+    } else if (other instanceof NoCoupleState) {
+      if (other.maleState instanceof HasItemState) {
+        otherDirection = Direction[other.maleState.direction]
+        gender = Gender.MALE
+      } else {
+        if (other.femaleState instanceof HasItemState) {
+          otherDirection = Direction[other.femaleState.direction]
+          gender = Gender.FEMALE
+        }
+      }
+    }
+
+    if (checkDirection) {
+      if (!otherDirection) {
+        return undefined // nothing sutible was found
+      }
+      isBetter =
+        isBetter && checkCoordinatesZero(otherDirection.coordinates as [number, number], cor)
+    }
+
+    if (isBetter) {
+      return gender
+    }
+
+    return undefined
+  }
+
   transition(env: Environment): CoupleSecondState {
     let backupItem: [number, number] | undefined = undefined
     let backupGender: Gender | undefined = undefined
@@ -344,48 +470,77 @@ export class CoupleFirstState extends CoupleState {
       if (!env.isAccessible(...cor)) {
         continue
       }
-      const state: SwitchPartnersState = env.get(...cor) as SwitchPartnersState
+      const state: MovingCouplesState = env.get(...cor) as MovingCouplesState
 
-      const femaleState: ItemState = state.getItemState(Gender.FEMALE)
-      const maleState: ItemState = state.getItemState(Gender.MALE)
-
-      if (this.isBetterMatch(this.femaleState, maleState, cor)) {
-        return new CoupleSecondState(this.maleState, this.femaleState, cor, Gender.MALE)
+      let betterGender = this.findBetterMatch(state, cor)
+      if (betterGender !== undefined) {
+        return new CoupleSecondStateSwitch(
+          this.maleState,
+          this.femaleState,
+          this.direction,
+          cor,
+          betterGender,
+        )
       }
 
-      if (this.isBetterMatch(this.maleState, femaleState, cor)) {
-        return new CoupleSecondState(this.maleState, this.femaleState, cor, Gender.FEMALE)
-      }
-
-      if (!backupItem) {
-        if (this.isBetterMatch(this.femaleState, maleState, cor, false)) {
-          backupItem = cor
-          backupGender = Gender.MALE
-        }
-      }
-      if (!backupItem) {
-        if (this.isBetterMatch(this.maleState, femaleState, cor, false)) {
-          backupItem = cor
-          backupGender = Gender.FEMALE
-        }
+      if (backupGender === undefined) {
+        backupGender = this.findBetterMatch(state, cor, false)
+        backupItem = cor
       }
     }
 
-    // if we have a backup item let's use it, otherwise nothing was found.
-    return new CoupleSecondState(this.maleState, this.femaleState, backupItem, backupGender)
+    if (backupItem && backupGender) {
+      return new CoupleSecondStateSwitch(
+        this.maleState,
+        this.femaleState,
+        this.direction,
+        backupItem,
+        backupGender,
+      )
+    }
+
+    // no better match found, attempting move
+    return new CoupleSecondStateMove(this.maleState, this.femaleState, this.direction)
   }
 }
 
-export class CoupleSecondState extends CoupleState {
+export abstract class CoupleSecondState extends CoupleState {}
+
+export class CoupleSecondStateMove extends CoupleState {
+  transition(env: Environment): MovingCouplesState {
+    const currentDirection = Direction[this.direction as TDirection]
+    const fallbackState = new CoupleFirstState(this.maleState, this.femaleState, this.direction)
+    if (!env.isAccessible(...currentDirection.coordinates)) {
+      return new CoupleFirstState(this.maleState, this.femaleState, randomDirection(this.direction))
+    }
+
+    let state: MovingCouplesState = env.get(...currentDirection.coordinates) as MovingCouplesState
+    if (!(state instanceof NoCoupleMoveCoupleSecondState)) {
+      return fallbackState
+    }
+
+    if (
+      checkCoordinatesZero(currentDirection.coordinates as [number, number], state.nextCoupleCor)
+    ) {
+      // move successful
+      return new NoCoupleFirstState()
+    }
+
+    return fallbackState
+  }
+}
+
+export class CoupleSecondStateSwitch extends CoupleSecondState {
   public nextGender?: Gender
   public nextCor?: [number, number]
   constructor(
     maleState: HasItemCoupleState,
     femaleState: HasItemCoupleState,
+    direction: TDirection,
     nextCor?: [number, number],
     nextGender?: Gender,
   ) {
-    super(maleState, femaleState)
+    super(maleState, femaleState, direction)
     this.nextCor = nextCor
     this.nextGender = nextGender
   }
@@ -398,9 +553,13 @@ export class CoupleSecondState extends CoupleState {
     if (!env.isAccessible(...this.nextCor)) {
       return fallbackState
     }
-    let state: SwitchPartnersState = env.get(...this.nextCor) as SwitchPartnersState
+    let state: MovingCouplesState = env.get(...this.nextCor) as MovingCouplesState
 
-    if (state instanceof CoupleSecondState && state.nextGender !== this.nextGender) {
+    if (state instanceof CoupleSecondStateMove) {
+      return fallbackState // these states don't mix.
+    }
+
+    if (state instanceof CoupleSecondStateSwitch && state.nextGender !== this.nextGender) {
       // the neighbor did not agree to the switch
       return fallbackState
     }
@@ -412,7 +571,7 @@ export class CoupleSecondState extends CoupleState {
     }
 
     const itemDirection =
-      state instanceof CoupleSecondState
+      state instanceof CoupleSecondStateSwitch
         ? { coordinates: state.nextCor }
         : Direction[itemState.direction as TDirection]
     if (checkCoordinatesZero(this.nextCor, itemDirection.coordinates as [number, number])) {
@@ -433,39 +592,39 @@ export class CoupleSecondState extends CoupleState {
   }
 }
 
-export function transition(env: Environment): SwitchPartnersState {
-  return (env.get(0, 0) as SwitchPartnersState).transition(env)
+export function transition(env: Environment): MovingCouplesState {
+  return (env.get(0, 0) as MovingCouplesState).transition(env)
 }
 
 export function fillBoard(automata: MatingAutomata) {
   const rand = () => Math.floor(Math.random() * 101)
   for (let i = 0; i < 50; i++) {
-    let maleState: SwitchPartnersState
+    let maleState: MovingCouplesState
     let maleItemState: ItemState
     let x
     let y
     do {
       x = Math.floor(Math.random() * automata.size)
       y = Math.floor(Math.random() * automata.size)
-      maleState = (automata.grid as SwitchPartnersState[][])[x][y]
+      maleState = (automata.grid as MovingCouplesState[][])[x][y]
       maleItemState = maleState.getItemState(Gender.MALE)
     } while (!maleItemState || maleItemState instanceof HasItemState)
-    ;(automata.grid as SwitchPartnersState[][])[x][y] = maleState.addItem(
+    ;(automata.grid as MovingCouplesState[][])[x][y] = maleState.addItem(
       new HasItemFirstState(Gender.MALE, rand()),
     )
   }
   for (let i = 0; i < 50; i++) {
-    let femaleState: SwitchPartnersState
+    let femaleState: MovingCouplesState
     let femaleItemState: ItemState
     let x
     let y
     do {
       x = Math.floor(Math.random() * automata.size)
       y = Math.floor(Math.random() * automata.size)
-      femaleState = (automata.grid as SwitchPartnersState[][])[x][y]
+      femaleState = (automata.grid as MovingCouplesState[][])[x][y]
       femaleItemState = femaleState.getItemState(Gender.FEMALE)
     } while (!femaleItemState || femaleItemState instanceof HasItemState)
-    ;(automata.grid as SwitchPartnersState[][])[x][y] = femaleState.addItem(
+    ;(automata.grid as MovingCouplesState[][])[x][y] = femaleState.addItem(
       new HasItemFirstState(Gender.FEMALE, rand()),
     )
   }

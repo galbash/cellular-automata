@@ -4,17 +4,13 @@ import AutomataView from './views/automata_view'
 import GOLCell from './game_of_life/components/cell'
 import GOLAutomata, { fillRandom } from './game_of_life/automata/automata'
 import './App.css'
-import MatingCell from './mating/components/cell'
-import MatingAutomata, { matingFillRandom } from './mating/automata/automata'
+import MatingAutomata from './mating/automata/automata'
 import GOLState from './game_of_life/automata/state'
 import State from './cellular_automata/state'
-import MatingState, { default as SimpleMatingState } from './mating/automata/states/simple_state'
 import Automata from './cellular_automata/automata'
 import MatingAutomataDetails from './mating/components/automata_details'
 import { Menu, Layout, Dropdown } from 'antd'
 import { ClickParam } from 'antd/es/menu'
-import FirstSightTransition from './mating/automata/transitions/first_sight'
-import ReplaceableCouplesTransition from './mating/automata/transitions/replaceable_couples_2'
 import FirstSightCell from './mating/components/first_sight_cell'
 import {
   FirstSightState,
@@ -29,12 +25,20 @@ import {
   transition as switchPartnersTransition,
   fillBoard as switchPartnersFillBoard,
 } from './mating/automata/switch_partners'
+
+import MovingCouplesCell from './mating/components/moving_couples_cell'
+import {
+  MovingCouplesState,
+  NoCoupleFirstState as MovingCouplesNoCoupleState,
+  transition as movingCouplesTransition,
+  fillBoard as movingCouplesFillBoard,
+} from './mating/automata/moving_couples'
 const { Header, Content } = Layout
 
 @hot
 class App extends Component {
   state = {
-    game: 'Mating Option 1',
+    game: 'Mating Moving Couples',
   }
 
   AUTOMATAS: Map<String, () => ReactElement> = new Map([
@@ -45,36 +49,6 @@ class App extends Component {
           cellDisplay={(state: State) => <GOLCell state={state as GOLState} />}
           automataCreator={(size: number) => new GOLAutomata(size)}
           onGenerate={fillRandom}
-        />
-      ),
-    ],
-    [
-      'Mating Option 1',
-      () => (
-        <AutomataView
-          cellDisplay={(state: State) => <MatingCell state={state as MatingState} />}
-          automataCreator={(size: number) =>
-            new MatingAutomata(size, SimpleMatingState, FirstSightTransition)
-          }
-          onGenerate={(automata: Automata) => matingFillRandom(automata as MatingAutomata)}
-          automataDetailsDisplay={(automata: Automata) => (
-            <MatingAutomataDetails automata={automata as MatingAutomata} />
-          )}
-        />
-      ),
-    ],
-    [
-      'Mating Option 2',
-      () => (
-        <AutomataView
-          cellDisplay={(state: State) => <MatingCell state={state as MatingState} />}
-          automataCreator={(size: number) =>
-            new MatingAutomata(size, SimpleMatingState, ReplaceableCouplesTransition)
-          }
-          onGenerate={(automata: Automata) => matingFillRandom(automata as MatingAutomata)}
-          automataDetailsDisplay={(automata: Automata) => (
-            <MatingAutomataDetails automata={automata as MatingAutomata} />
-          )}
         />
       ),
     ],
@@ -104,6 +78,21 @@ class App extends Component {
             new MatingAutomata(size, SwitchPartnersNoCoupleState, switchPartnersTransition)
           }
           onGenerate={(automata: Automata) => switchPartnersFillBoard(automata as MatingAutomata)}
+          automataDetailsDisplay={(automata: Automata) => (
+            <MatingAutomataDetails automata={automata as MatingAutomata} />
+          )}
+        />
+      ),
+    ],
+    [
+      'Mating Moving Couples',
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => <MovingCouplesCell state={state as MovingCouplesState} />}
+          automataCreator={(size: number) =>
+            new MatingAutomata(size, MovingCouplesNoCoupleState, movingCouplesTransition)
+          }
+          onGenerate={(automata: Automata) => movingCouplesFillBoard(automata as MatingAutomata)}
           automataDetailsDisplay={(automata: Automata) => (
             <MatingAutomataDetails automata={automata as MatingAutomata} />
           )}
