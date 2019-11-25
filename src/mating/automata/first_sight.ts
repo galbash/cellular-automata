@@ -77,7 +77,12 @@ export class NoItemSecondState extends NoItemState {
 
     const itemDirection = Direction[itemState.direction as TDirection]
     if (checkCoordinatesZero(this.nextItemCor, itemDirection.coordinates as [number, number])) {
-      return new HasItemFirstState(itemState.gender, itemState.character, itemState.direction)
+      return new HasItemFirstState(
+        itemState.gender,
+        itemState.character,
+        itemState.direction,
+        itemState.stepsCount,
+      )
     }
 
     return fallbackState
@@ -86,16 +91,27 @@ export class NoItemSecondState extends NoItemState {
 
 export class HasItemFirstState extends BaseHasItemFirstState {
   transitionSingle(env: Environment): ItemState {
-    return new HasItemSecondState(this.gender, this.character, this.direction)
+    return new HasItemSecondState(this.gender, this.character, this.direction, this.stepsCount)
   }
 }
 
 export class HasItemSecondState extends HasItemState {
   transitionSingle(env: Environment): ItemState {
     const currentDirection = Direction[this.direction as TDirection]
-    const fallbackState = new HasItemFirstState(this.gender, this.character, this.direction)
+
+    // a failed step is more expensive
+    const fallbackState = new HasItemFirstState(
+      this.gender,
+      this.character,
+      this.direction,
+      this.stepsCount + 1,
+    )
     if (!env.isAccessible(...currentDirection.coordinates)) {
-      return new HasItemFirstState(this.gender, this.character, randomDirection(this.direction))
+      return new HasItemFirstState(
+        this.gender,
+        this.character,
+        randomDirection(this.seed, this.direction),
+      )
     }
     let state: FirstSightState = env.get(...currentDirection.coordinates) as FirstSightState
     if (!(state instanceof NoCoupleState)) {

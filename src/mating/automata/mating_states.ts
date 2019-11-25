@@ -1,6 +1,6 @@
 import State from '../../cellular_automata/state'
 import Environment from '../../cellular_automata/environment'
-import { randomDirection, TDirection } from './directions'
+import { Direction, randomDirection, TDirection } from './directions'
 
 export default abstract class BaseMatingState extends State {
   clone(): BaseMatingState {
@@ -86,27 +86,38 @@ export abstract class NoItemState extends ItemState {
 }
 
 export abstract class HasItemState extends ItemState {
-  static CHANGE_DIRACTION_CHANCE: number = 0.1
   public character: number
   public direction: TDirection
+  public stepsCount: number // counter of steps in current direction
 
-  constructor(gender: Gender, character: number, direction: TDirection) {
+  constructor(gender: Gender, character: number, direction: TDirection, stepsCount: number = 0) {
     super(gender)
     this.character = character
     this.direction = direction
+    this.stepsCount = stepsCount
   }
 
   get occupied(): boolean {
     return true
   }
+
+  get seed(): number {
+    return Direction[this.direction].number + this.stepsCount
+  }
 }
 
 export abstract class BaseHasItemFirstState extends HasItemState {
-  constructor(gender: Gender, character: number, direction?: TDirection) {
-    let realDirection =
-      Math.random() < HasItemState.CHANGE_DIRACTION_CHANCE
-        ? randomDirection(direction)
-        : direction || randomDirection()
-    super(gender, character, realDirection)
+  get stepsLimit() {
+    // pseduo random steps limit, between 10 to 20
+    return (this.seed % 10) + 10
+  }
+  constructor(gender: Gender, character: number, direction?: TDirection, stepsCount: number = 0) {
+    let tmpDirection = direction ? direction : randomDirection(character)
+    let realStepsCount = stepsCount + 1
+    super(gender, character, tmpDirection, realStepsCount)
+    if (this.stepsCount > this.stepsLimit) {
+      this.direction = randomDirection(this.seed, this.direction)
+      this.stepsCount = 0
+    }
   }
 }
