@@ -2,6 +2,10 @@ import Environment from '../environment'
 import Grid, { GridEntry } from '../grid'
 import State from '../state'
 
+/**
+ * A environment where you can access all the cells surrounding you
+ * (including diagonals)
+ */
 export default class MooreEnv extends Environment {
   public constructor(grid: Grid, ...coordinates: number[]) {
     super(grid, ...coordinates)

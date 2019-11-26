@@ -1,3 +1,4 @@
-export default abstract class State {
-  abstract clone(): State
-}
+/**
+ * a cell state
+ */
+export default abstract class State {}

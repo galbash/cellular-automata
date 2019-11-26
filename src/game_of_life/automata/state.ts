@@ -7,8 +7,4 @@ export default class GOLState extends State {
     super()
     this.alive = alive
   }
-
-  clone(): GOLState {
-    return new GOLState(this.alive)
-  }
 }

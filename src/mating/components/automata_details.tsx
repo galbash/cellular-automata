@@ -10,7 +10,11 @@ const MatingAutomataDetails: AutomataDetails<MatingAutomataDetailsProps> = (
   props: MatingAutomataDetailsProps,
 ) => {
   const { automata } = props
-  return <React.Fragment>Happyness Factor: {automata.matingScore.toFixed(3)}</React.Fragment>
+  return (
+    <React.Fragment>
+      Happyness Factor: {automata.matingScore ? automata.matingScore.toFixed(3) : '1.000'}
+    </React.Fragment>
+  )
 }
 
 export default MatingAutomataDetails

@@ -2,6 +2,10 @@ import Environment from '../environment'
 import Grid, { GridEntry } from '../grid'
 import State from '../state'
 
+/**
+ * An environment where you can't access cells which are diagonal
+ * to you
+ */
 export default class VNEnv extends Environment {
   public constructor(grid: Grid, ...coordinates: number[]) {
     super(grid, ...coordinates)

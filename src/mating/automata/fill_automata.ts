@@ -1,8 +1,14 @@
 import MatingAutomata from './automata'
 import BaseMatingState, { Gender, HasItemState, ItemState } from './mating_states'
-import { MAX_CHARACTER } from './utils'
 
 const ITEM_NUM = 50
+const MAX_CHARACTER = 100
+
+/**
+ * fills the automata with random data
+ * @param {MatingAutomata} automata automata to fill
+ * @param {{new(g: Gender, char: number): HasItemState}} itemCreator the initializer for an item state
+ */
 export function fillMatingAutomata(
   automata: MatingAutomata,
   itemCreator: new (g: Gender, char: number) => HasItemState,

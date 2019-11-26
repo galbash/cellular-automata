@@ -6,6 +6,9 @@ import { transitionRule } from './transition'
 export type envCreator = new (...args: any[]) => Environment
 export type stateCreator = new (...args: any[]) => State
 
+/**
+ * a cellular automata
+ */
 export default abstract class Automata {
   private _grid: Grid
   public readonly size: number
@@ -13,6 +16,12 @@ export default abstract class Automata {
   private readonly _envType: envCreator
   private readonly _transition: transitionRule
 
+  /**
+   * @param {number} size The size of the grid
+   * @param {stateCreator} stateInitializer Initializer for the states
+   * @param {envCreator} environmentInitializer environment to use
+   * @param {transitionRule} transition transition rule to use
+   */
   constructor(
     size: number,
     stateInitializer: stateCreator,
@@ -31,10 +40,17 @@ export default abstract class Automata {
     return this._grid
   }
 
+  /**
+   * @return {number} current automata generation
+   */
   get generation(): number {
     return this._generation
   }
 
+  /**
+   * updates a grid entry with a single step
+   * @return {GridEntry} the entry for the next generation
+   */
   private stepEntry(entry: GridEntry, ...coordinates: number[]): GridEntry {
     if (entry instanceof State) {
       return this._transition(new this._envType(this._grid, ...coordinates))
@@ -45,6 +61,9 @@ export default abstract class Automata {
     }
   }
 
+  /**
+   * steps the automata by one generation.
+   */
   step(): void {
     this._grid = this._grid.map((entry, i) => this.stepEntry(entry, i))
     this._generation++

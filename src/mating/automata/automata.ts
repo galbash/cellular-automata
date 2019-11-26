@@ -5,6 +5,9 @@ import MooreEnv from '../../cellular_automata/environments/moore_env'
 import { EnvType, setenv } from './directions'
 import VNEnv from '../../cellular_automata/environments/von_neuman_env'
 
+/**
+ * Mating game automata
+ */
 export default class MatingAutomata extends Automata {
   constructor(
     size: number,
@@ -22,6 +25,10 @@ export default class MatingAutomata extends Automata {
   }
 
   static MAX_MATING_SCORE: number = 101 * 100
+
+  /**
+   * @return {number} The mating score for the current automata state
+   */
   get matingScore(): number {
     return (
       (MatingAutomata.MAX_MATING_SCORE -

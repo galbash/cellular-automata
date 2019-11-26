@@ -1,3 +1,6 @@
+/**
+ * different states used for the "first sight" method
+ */
 import BaseMatingState, {
   BaseHasItemFirstState,
   Gender,

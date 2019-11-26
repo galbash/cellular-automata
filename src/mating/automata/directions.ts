@@ -22,10 +22,19 @@ export enum EnvType {
 }
 
 let envType: EnvType = EnvType.Moore
+
+/**
+ * Sets the env this api should serve
+ * @param {EnvType} env The envType to use
+ */
 export function setenv(env: EnvType) {
   envType = env
 }
 
+/**
+ * returns the appropriate directions object, based on the environment
+ * @return {any}
+ */
 export function getDirectionsObject() {
   switch (envType) {
     case EnvType.VN:
@@ -35,6 +44,12 @@ export function getDirectionsObject() {
   }
 }
 
+/**
+ * returns a pseudo random direction from the direction object, excluding some directions
+ * @param {number} seed The psaudo random seed
+ * @param {TDirection} current directions to exclude
+ * @return {TDirection} new direction
+ */
 export function randomDirection(seed: number, ...current: TDirection[]): TDirection {
   let directions = Object.keys(getDirectionsObject())
   if (current.length) {
@@ -46,6 +61,11 @@ export function randomDirection(seed: number, ...current: TDirection[]): TDirect
   return directions[index] as TDirection
 }
 
+/**
+ * returns the next direction in the direction list
+ * @param {TDirection} current the current direction
+ * @return {TDirection} next direction
+ */
 export function nextDirection(current: TDirection): TDirection {
   let directions = Object.keys(getDirectionsObject())
   let index = directions.indexOf(current)
