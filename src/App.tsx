@@ -27,12 +27,14 @@ import {
 } from './mating/automata/moving_couples'
 import { transition as matingTransition } from './mating/automata/transition'
 import BaseMatingState from './mating/automata/mating_states'
+import MooreEnv from './cellular_automata/environments/moore_env'
+import VNEnv from './cellular_automata/environments/von_neuman_env'
 const { Header, Content } = Layout
 
 @hot
 class App extends Component {
   state = {
-    game: 'Mating Moving Couples',
+    game: 'Mating Moving Couples - VN',
   }
 
   AUTOMATAS: Map<String, () => ReactElement> = new Map([
@@ -47,12 +49,12 @@ class App extends Component {
       ),
     ],
     [
-      'Mating First Sight',
+      'Mating First Sight - Moore',
       () => (
         <AutomataView
           cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
           automataCreator={(size: number) =>
-            new MatingAutomata(size, FirstSightNoCoupleState, matingTransition)
+            new MatingAutomata(size, FirstSightNoCoupleState, MooreEnv, matingTransition)
           }
           onGenerate={(automata: Automata) => firstSightFillBoard(automata as MatingAutomata)}
           automataDetailsDisplay={(automata: Automata) => (
@@ -62,12 +64,12 @@ class App extends Component {
       ),
     ],
     [
-      'Mating Switch Partners',
+      'Mating Switch Partners - Moore',
       () => (
         <AutomataView
           cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
           automataCreator={(size: number) =>
-            new MatingAutomata(size, SwitchPartnersNoCoupleState, matingTransition)
+            new MatingAutomata(size, SwitchPartnersNoCoupleState, MooreEnv, matingTransition)
           }
           onGenerate={(automata: Automata) => switchPartnersFillBoard(automata as MatingAutomata)}
           automataDetailsDisplay={(automata: Automata) => (
@@ -77,12 +79,57 @@ class App extends Component {
       ),
     ],
     [
-      'Mating Moving Couples',
+      'Mating Moving Couples - Moore',
       () => (
         <AutomataView
           cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
           automataCreator={(size: number) =>
-            new MatingAutomata(size, MovingCouplesNoCoupleState, matingTransition)
+            new MatingAutomata(size, MovingCouplesNoCoupleState, MooreEnv, matingTransition)
+          }
+          onGenerate={(automata: Automata) => movingCouplesFillBoard(automata as MatingAutomata)}
+          automataDetailsDisplay={(automata: Automata) => (
+            <MatingAutomataDetails automata={automata as MatingAutomata} />
+          )}
+        />
+      ),
+    ],
+    [
+      'Mating First Sight - VN',
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
+          automataCreator={(size: number) =>
+            new MatingAutomata(size, FirstSightNoCoupleState, VNEnv, matingTransition)
+          }
+          onGenerate={(automata: Automata) => firstSightFillBoard(automata as MatingAutomata)}
+          automataDetailsDisplay={(automata: Automata) => (
+            <MatingAutomataDetails automata={automata as MatingAutomata} />
+          )}
+        />
+      ),
+    ],
+    [
+      'Mating Switch Partners - VN',
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
+          automataCreator={(size: number) =>
+            new MatingAutomata(size, SwitchPartnersNoCoupleState, VNEnv, matingTransition)
+          }
+          onGenerate={(automata: Automata) => switchPartnersFillBoard(automata as MatingAutomata)}
+          automataDetailsDisplay={(automata: Automata) => (
+            <MatingAutomataDetails automata={automata as MatingAutomata} />
+          )}
+        />
+      ),
+    ],
+    [
+      'Mating Moving Couples - VN',
+      () => (
+        <AutomataView
+          cellDisplay={(state: State) => <MatingCell state={state as BaseMatingState} />}
+          automataCreator={(size: number) =>
+            new MatingAutomata(size, MovingCouplesNoCoupleState, VNEnv, matingTransition)
           }
           onGenerate={(automata: Automata) => movingCouplesFillBoard(automata as MatingAutomata)}
           automataDetailsDisplay={(automata: Automata) => (

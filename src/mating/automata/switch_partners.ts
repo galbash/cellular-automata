@@ -9,13 +9,21 @@ import MatingState, {
 import Environment from '../../cellular_automata/environment'
 import MatingAutomata from './automata'
 import { checkCoordinatesZero } from './utils'
-import { Direction, randomDirection, TDirection } from './directions'
+import {
+  Direction,
+  getDirectionsObject,
+  nextDirection,
+  randomDirection,
+  TDirection,
+} from './directions'
 import { fillMatingAutomata } from './fill_automata'
 
 export class NoItemFirstState extends NoItemState {
   transitionSingle(env: Environment): ItemState {
     let backupItem: [number, number] | undefined = undefined
-    for (let cor of Object.values(Direction).map(d => d.coordinates as [number, number])) {
+    for (let cor of Object.values(getDirectionsObject()).map(
+      d => d.coordinates as [number, number],
+    )) {
       if (!env.isAccessible(...cor)) {
         continue
       }
@@ -99,19 +107,20 @@ export class HasItemFirstState extends BaseHasItemFirstState {
 export class HasItemSecondState extends HasItemState {
   transitionSingle(env: Environment): ItemState {
     const currentDirection = Direction[this.direction as TDirection]
-    // a failed step is more expensive
     const fallbackState = new HasItemFirstState(
       this.gender,
       this.character,
       this.direction,
-      this.stepsCount + 1,
+      this.stepsCount,
     )
     if (!env.isAccessible(...currentDirection.coordinates)) {
-      return new HasItemFirstState(
-        this.gender,
-        this.character,
-        randomDirection(this.seed, this.direction),
-      )
+      let triedDirections = [this.direction]
+      let newDirection: TDirection | undefined = undefined
+      do {
+        newDirection = randomDirection(this.seed, ...triedDirections)
+        triedDirections = [newDirection, ...triedDirections]
+      } while (!env.isAccessible(...Direction[newDirection].coordinates))
+      return new HasItemFirstState(this.gender, this.character, newDirection, this.stepsCount)
     }
     let state: SwitchPartnersState = env.get(...currentDirection.coordinates) as SwitchPartnersState
     let itemState = state.getItemState(this.gender)
@@ -211,9 +220,9 @@ export class CoupleFirstState extends CoupleState {
   constructor(maleState: HasItemCoupleState, femaleState: HasItemCoupleState) {
     // randomize direction for better switching each two-cycles
     let newMaleState = new HasItemCoupleState(maleState)
-    newMaleState.direction = randomDirection(newMaleState.seed, newMaleState.direction)
+    newMaleState.direction = nextDirection(newMaleState.direction)
     let newFemaleState = new HasItemCoupleState(femaleState)
-    newFemaleState.direction = randomDirection(newFemaleState.seed, newFemaleState.direction)
+    newFemaleState.direction = nextDirection(newFemaleState.direction)
     super(newMaleState, newFemaleState)
   }
 
@@ -244,7 +253,9 @@ export class CoupleFirstState extends CoupleState {
   transition(env: Environment): CoupleSecondState {
     let backupItem: [number, number] | undefined = undefined
     let backupGender: Gender | undefined = undefined
-    for (let cor of Object.values(Direction).map(d => d.coordinates as [number, number])) {
+    for (let cor of Object.values(getDirectionsObject()).map(
+      d => d.coordinates as [number, number],
+    )) {
       if (!env.isAccessible(...cor)) {
         continue
       }

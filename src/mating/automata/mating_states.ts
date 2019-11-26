@@ -1,6 +1,11 @@
 import State from '../../cellular_automata/state'
 import Environment from '../../cellular_automata/environment'
-import { Direction, randomDirection, TDirection } from './directions'
+import { Direction, nextDirection, randomDirection, TDirection } from './directions'
+
+export enum Gender {
+  MALE = 1, // so we can do !gender
+  FEMALE,
+}
 
 export default abstract class BaseMatingState extends State {
   clone(): BaseMatingState {
@@ -62,11 +67,6 @@ export const calcMatingScore = (p1: ItemState, p2: ItemState) => {
   return Math.abs(p1.character - p2.character)
 }
 
-export enum Gender {
-  MALE = 1, // so we can do !gender
-  FEMALE,
-}
-
 export abstract class ItemState {
   public gender: Gender
 
@@ -107,16 +107,14 @@ export abstract class HasItemState extends ItemState {
 }
 
 export abstract class BaseHasItemFirstState extends HasItemState {
-  get stepsLimit() {
-    // pseduo random steps limit, between 10 to 20
-    return (this.seed % 10) + 10
-  }
+  static STEP_LIMIT: number = 10
+
   constructor(gender: Gender, character: number, direction?: TDirection, stepsCount: number = 0) {
     let tmpDirection = direction ? direction : randomDirection(character)
     let realStepsCount = stepsCount + 1
     super(gender, character, tmpDirection, realStepsCount)
-    if (this.stepsCount > this.stepsLimit) {
-      this.direction = randomDirection(this.seed, this.direction)
+    if (this.stepsCount > BaseHasItemFirstState.STEP_LIMIT) {
+      this.direction = nextDirection(this.direction)
       this.stepsCount = 0
     }
   }

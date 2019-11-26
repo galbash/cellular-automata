@@ -8,13 +8,15 @@ import BaseMatingState, {
 import Environment from '../../cellular_automata/environment'
 import MatingAutomata from './automata'
 import { checkCoordinatesZero } from './utils'
-import { Direction, randomDirection, TDirection } from './directions'
+import { Direction, getDirectionsObject, randomDirection, TDirection } from './directions'
 import { fillMatingAutomata } from './fill_automata'
 
 export class NoItemFirstState extends NoItemState {
   transitionSingle(env: Environment): ItemState {
     let backupItem: [number, number] | undefined = undefined
-    for (let cor of Object.values(Direction).map(d => d.coordinates as [number, number])) {
+    for (let cor of Object.values(getDirectionsObject()).map(
+      d => d.coordinates as [number, number],
+    )) {
       if (!env.isAccessible(...cor)) {
         continue
       }
@@ -99,19 +101,20 @@ export class HasItemSecondState extends HasItemState {
   transitionSingle(env: Environment): ItemState {
     const currentDirection = Direction[this.direction as TDirection]
 
-    // a failed step is more expensive
     const fallbackState = new HasItemFirstState(
       this.gender,
       this.character,
       this.direction,
-      this.stepsCount + 1,
+      this.stepsCount,
     )
     if (!env.isAccessible(...currentDirection.coordinates)) {
-      return new HasItemFirstState(
-        this.gender,
-        this.character,
-        randomDirection(this.seed, this.direction),
-      )
+      let triedDirections = [this.direction]
+      let newDirection: TDirection | undefined = undefined
+      do {
+        newDirection = randomDirection(this.seed, ...triedDirections)
+        triedDirections = [newDirection, ...triedDirections]
+      } while (!env.isAccessible(...Direction[newDirection].coordinates))
+      return new HasItemFirstState(this.gender, this.character, newDirection, this.stepsCount)
     }
     let state: FirstSightState = env.get(...currentDirection.coordinates) as FirstSightState
     if (!(state instanceof NoCoupleState)) {

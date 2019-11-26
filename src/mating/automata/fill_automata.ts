@@ -20,7 +20,7 @@ export function fillMatingAutomata(
       maleItemState = maleState.getItemState(Gender.MALE)
     } while (!maleItemState || maleItemState instanceof HasItemState)
     ;(automata.grid as BaseMatingState[][])[x][y] = maleState.addItem(
-      new itemCreator(Gender.MALE, rand()),
+      new itemCreator(Gender.MALE, rand() as number),
     )
   }
   for (let i = 0; i < ITEM_NUM; i++) {
@@ -35,7 +35,7 @@ export function fillMatingAutomata(
       femaleItemState = femaleState.getItemState(Gender.FEMALE)
     } while (!femaleItemState || femaleItemState instanceof HasItemState)
     ;(automata.grid as BaseMatingState[][])[x][y] = femaleState.addItem(
-      new itemCreator(Gender.FEMALE, rand()),
+      new itemCreator(Gender.FEMALE, rand() as number),
     )
   }
 }

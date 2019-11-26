@@ -13,7 +13,7 @@ export default abstract class Automata {
   private readonly _envType: envCreator
   private readonly _transition: transitionRule
 
-  protected constructor(
+  constructor(
     size: number,
     stateInitializer: stateCreator,
     environmentInitializer: envCreator,
